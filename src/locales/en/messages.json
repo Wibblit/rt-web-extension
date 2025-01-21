@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "name in src/locales/en/messages.json",
+    "description": "resumetweaker | Your Job Tracker"
+  },
+  "extDescription": {
+    "message": "description in src/locales/en/messages.json",
+    "description": "resumetweaker - The power of convenience in tracking your job applications."
+  }
+}
