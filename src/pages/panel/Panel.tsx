@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
 import Header from "@/components/Header";
+import { AuthManager } from "../background/services/AuthManager";
 
 type JobState =
   | "bookmark"
@@ -53,6 +54,13 @@ export function Panel() {
     newJob.title.trim() !== "" && newJob.company.trim() !== "";
 
   useEffect(() => {
+    (async () => {
+      const islogined = await AuthManager.checkAuthStatus()
+      if (islogined) {
+        await AuthManager.redirectIfNotLoggedIn();
+        return;
+      }
+    })()
     const savedJobs = localStorage.getItem("jobs");
     if (savedJobs) {
       setJobs(JSON.parse(savedJobs));

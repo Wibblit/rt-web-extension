@@ -25,7 +25,7 @@
   "host_permissions": ["*://*/*"],
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "matches": ["https://*.linkedin.com/*"],
       "js": ["src/pages/content/index.tsx"],
       "css": ["contentStyle.css"]
     }

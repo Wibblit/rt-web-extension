@@ -34,7 +34,7 @@ root.render(<SidePanelButton />);
 
 try {
   console.log('content script loaded');
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === "scrapeJobData") {
       LinkedInScraper.scrapeJobData().then((data) => {
         console.log("Scraped Data:", data);
