@@ -59,14 +59,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       chrome.tabs.sendMessage(
         tabId,
         { action: "scrapeJobData" },
-        (response) => {
+        async (response) => {
           console.log(response, "response from content script");
           chrome.sidePanel.setOptions({
             path: jobDetilsPage,
             enabled: true,
             tabId: tabId,
           });
-          jobData = response;
+          const isExists = await JobStorage.exists(response.data.id);
+          jobData = {
+            ...response,
+            isExists: isExists.exists,
+            jobState: isExists.state,
+          };
         }
       );
     } else if (changeInfo.status === "loading") {
@@ -97,22 +102,56 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 });
 
-//Save and unsave data
-chrome.runtime.onMessage.addListener(
-  async (message, _sender, sendResponse) => {
-    if (message.type === "saveJob") {
-      if (message.save) {
-        await JobStorage.addJob(message.job);
-        sendResponse({ jobId: message.jobId, success: true, message: "Added job successfully" });
-        return true;
-      } else {
-        await JobStorage.deleteJob(message.jobId)
-        sendResponse({ jobId: message.jobId, success: true, message: "Deleted job successfully" });
-        return true;
-      }
-    }
+//Save and Unsave
+chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
+  if (message.type === "saveJob") {
+    await JobStorage.addJob(message.job);
+    sendResponse({
+      jobId: message.jobId,
+      success: true,
+      message: "Added job successfully",
+    });
+    return true;
   }
-);
+  if (message.type === "deleteJob") {
+    JobStorage.deleteJob(message.jobId)
+      .then(() => {
+        sendResponse({
+          jobId: message.jobId,
+          success: true,
+          message: "Deleted job successfully",
+        });
+      })
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message });
+      });
+    return true;
+  }
+});
 
-
-
+//GET & UPDATE job
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === "getJobs") {
+    JobStorage.getData()
+      .then((response) => {
+        sendResponse({
+          success: true,
+          data: response.data.slice(-5).reverse(),
+        });
+      })
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message });
+      });
+    return true;
+  }
+  if (message.type === "updateJob") {
+    JobStorage.updateJob(message.jobId, message.updatedJob)
+      .then(() => {
+        sendResponse({ success: true });
+      })
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message });
+      });
+    return true; // Required for async response
+  }
+});

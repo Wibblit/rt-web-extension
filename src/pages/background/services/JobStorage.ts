@@ -29,16 +29,37 @@ export class JobStorage {
     });
   }
 
-  // Add a new job to the data
+  // Check if a job exists by ID
+  static async exists(jobId: string): Promise<{ exists: boolean; state?: string }> {
+    const currentData = await this.getData();
+    const job = currentData.data.find((job) => job.id === jobId);
+  
+    if (job) {
+      return { exists: true, state: job.state }; // Return the job's state if it exists
+    } else {
+      return { exists: false, state: undefined }; // Return false if the job doesn't exist
+    }
+  }
+
+  // Add a new job to the data if it doesn't already exist
   static async addJob(job: Job): Promise<void> {
     const currentData = await this.getData();
+    const jobExists = await this.exists(job.id);
+
+    if (jobExists.exists) {
+      throw new Error(`Job with ID ${job.id} already exists.`);
+    }
+
     currentData.data.push(job);
     currentData.isChanged = true;
     await this.saveData(currentData);
   }
 
   // Update an existing job by ID
-  static async updateJob(jobId: string, updatedJob: Partial<Job>): Promise<void> {
+  static async updateJob(
+    jobId: string,
+    updatedJob: Partial<Job>
+  ): Promise<void> {
     const currentData = await this.getData();
     const jobIndex = currentData.data.findIndex((job) => job.id === jobId);
 
@@ -76,7 +97,7 @@ export class JobStorage {
   }
 
   // Set isChanged to false
- static  async unsetIsChanged(): Promise<void> {
+  static async unsetIsChanged(): Promise<void> {
     const currentData = await this.getData();
     currentData.isChanged = false;
     await this.saveData(currentData);
@@ -95,3 +116,4 @@ export class JobStorage {
     });
   }
 }
+
