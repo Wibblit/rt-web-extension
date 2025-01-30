@@ -16,6 +16,14 @@ export class JobStorage {
     });
   }
 
+  // Replace entire job array data
+  static async replaceAllJobs(newJobs: Job[]): Promise<void> {
+    const currentData = await this.getData();
+    currentData.data = newJobs;
+    currentData.isChanged = true;
+    await this.saveData(currentData);
+  }
+
   // Save data to Chrome storage
   private static async saveData(data: Data): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -30,10 +38,12 @@ export class JobStorage {
   }
 
   // Check if a job exists by ID
-  static async exists(jobId: string): Promise<{ exists: boolean; state?: string }> {
+  static async exists(
+    jobId: string
+  ): Promise<{ exists: boolean; state?: string }> {
     const currentData = await this.getData();
     const job = currentData.data.find((job) => job.id === jobId);
-  
+
     if (job) {
       return { exists: true, state: job.state }; // Return the job's state if it exists
     } else {
@@ -50,7 +60,14 @@ export class JobStorage {
       throw new Error(`Job with ID ${job.id} already exists.`);
     }
 
-    currentData.data.push(job);
+    currentData.data.push({
+      ...job,
+      addedOn: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    });
     currentData.isChanged = true;
     await this.saveData(currentData);
   }
@@ -116,4 +133,3 @@ export class JobStorage {
     });
   }
 }
-

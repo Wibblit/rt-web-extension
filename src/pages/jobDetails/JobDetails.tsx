@@ -41,6 +41,7 @@ interface Job {
   workType: string;
   salaryRange: string;
   state: JobState;
+  url: string | URL;
 }
 
 const DESCRIPTION_LIMIT = 1600; // Limit for the truncated description
@@ -56,13 +57,13 @@ function JobDetails() {
 
     async function getJobData() {
       chrome.runtime.sendMessage({ type: "getJobData" }, (response) => {
-        setJob({ ...response.data, state: response.jobState });
+        setJob({ ...response.data, state: response.jobState ?? "bookmark" });
         setIsSaved(response.isExists);
         if (response.success) {
           clearInterval(intervalId);
         }
       });
-    }
+    } 
 
     getJobData();
     intervalId = setInterval(getJobData, 1000);

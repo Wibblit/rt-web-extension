@@ -16,6 +16,8 @@ export interface Job {
   workType: string;
   salaryRange: string;
   state: JobState;
+  addedOn: string;
+  url: URL;
 }
 
 export interface Data {

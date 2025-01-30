@@ -43,6 +43,22 @@ chrome.runtime.onMessageExternal.addListener(
       sendResponse({ status: "success" });
       return true;
     }
+
+    if (request.type === "GET_ALL_JOBS") {
+      const response = await JobStorage.getData();
+      sendResponse({
+        success: true,
+        data: response.data,
+      });
+      return true;
+    }
+    if (request.type === "UPDATE_CHANGES") {
+      await JobStorage.replaceAllJobs(request.data);
+      sendResponse({
+        success: true,
+      });
+      return true;
+    }
     sendResponse({ status: "unknown" });
   }
 );

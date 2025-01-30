@@ -41,9 +41,12 @@ export class LinkedInScraper {
 
   /**
    * Extracts the jobId from the current LinkedIn job URL.
-   * @returns {Promise<{ jobId: string | null }>} The jobId or null if not found.
+   * @returns {Promise<{ {jobId: string, url: URL | string;} | null }>} The jobId or null if not found.
    */
-  static async extractJobId(): Promise<{ jobId: string | null }> {
+  static async extractJobIdAndUrl(): Promise<{
+    jobId: string | null;
+    url: string | URL | null;
+  }> {
     return new Promise((resolve) => {
       const currentUrl = window.location.href;
 
@@ -56,13 +59,13 @@ export class LinkedInScraper {
           url.pathname === "/jobs/view/"
         ) {
           const jobId = url.searchParams.get("currentJobId");
-          resolve({ jobId: jobId + "-linkedin" });
+          resolve({ jobId: jobId + "-linkedin", url: url });
         } else {
-          resolve({ jobId: null });
+          resolve({ jobId: null, url: null });
         }
       } catch (error) {
         console.error("Error parsing URL:", error);
-        resolve({ jobId: null });
+        resolve({ jobId: null, url: null });
       }
     });
   }
@@ -219,6 +222,7 @@ export class LinkedInScraper {
     employmentType: string | null;
     workType: string | null;
     salaryRange: string | null;
+    url: URL | string | null;
   }> {
     try {
       const { jobTitle } = await this.extractJobTitle();
@@ -227,7 +231,7 @@ export class LinkedInScraper {
       const jobDescription = await this.extractJobDescription();
       const { employmentType, workType, salaryRange } =
         await this.extractEmploymentDetails();
-      const { jobId } = await this.extractJobId();
+      const { jobId, url } = await this.extractJobIdAndUrl();
 
       return {
         id: jobId,
@@ -239,6 +243,7 @@ export class LinkedInScraper {
         employmentType,
         workType,
         salaryRange,
+        url,
       };
     } catch (error) {
       console.error(error);
@@ -252,6 +257,7 @@ export class LinkedInScraper {
         workType: null,
         salaryRange: null,
         id: null,
+        url: null,
       };
     }
   }
